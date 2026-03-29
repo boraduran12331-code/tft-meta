@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ControlPanel } from './components/ControlPanel'
 import { OverlayPanel } from './components/OverlayPanel'
+import NotificationBar from './components/NotificationBar'
 import { useAppStore } from './store/appStore'
 
 function App() {
@@ -52,11 +53,9 @@ function App() {
     }
   }, [setLcuConnected, setGamePhase, setOverlayInteractive])
 
-  // Hash-based routing: #/overlay → overlay view, default → control panel
-  if (route === '#/overlay') {
-    return <OverlayPanel />
-  }
-
+  // Hash-based routing
+  if (route === '#/overlay') return <OverlayPanel />
+  if (route === '#/notification') return <NotificationBar />
   return <ControlPanel />
 }
 

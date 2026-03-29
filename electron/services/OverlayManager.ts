@@ -165,7 +165,13 @@ export class OverlayManager {
       this.window.setFocusable(false)
     }
 
-    this.window.webContents.send('overlay:interactive-state', this.isInteractive)
+    if (this.window && !this.window.isDestroyed() && !this.window.webContents.isDestroyed()) {
+      try {
+        this.window.webContents.send('overlay:interactive-state', this.isInteractive)
+      } catch (e) {
+        console.warn('[OverlayManager] Failed to send interactive state:', e)
+      }
+    }
     this.broadcast('overlay:state-changed', { isVisible: this.isVisible, isInteractive: this.isInteractive })
   }
 
@@ -200,11 +206,15 @@ export class OverlayManager {
   // ─── Helpers ──────────────────────────────────────────────
 
   private broadcast(channel: string, payload: any) {
-    if (this.window && !this.window.isDestroyed()) {
-      this.window.webContents.send(channel, payload)
+    if (this.window && !this.window.isDestroyed() && !this.window.webContents.isDestroyed()) {
+      try {
+        this.window.webContents.send(channel, payload)
+      } catch { /* Suppress dispose errors */ }
     }
-    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-      this.mainWindow.webContents.send(channel, payload)
+    if (this.mainWindow && !this.mainWindow.isDestroyed() && !this.mainWindow.webContents.isDestroyed()) {
+      try {
+        this.mainWindow.webContents.send(channel, payload)
+      } catch { /* Suppress dispose errors */ }
     }
   }
 

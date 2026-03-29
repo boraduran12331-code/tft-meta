@@ -2,7 +2,7 @@
 
 .control-root {
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: #0a0a0b; 
   padding: 44px 20px 20px;
   display: flex;
   flex-direction: column;

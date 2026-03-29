@@ -1,74 +1,87 @@
-export interface HotkeyResult {
-  success: boolean
-  error?: string
-}
+// src/types/electron.d.ts
+// Global type declarations for the contextBridge-exposed electronAPI
 
-export interface OverlayStatePayload {
-  isVisible: boolean
-  isInteractive: boolean
-}
+interface HotkeyPayload { interactKey: string; visibilityKey: string }
+interface OverlayStatePayload { isVisible: boolean; isInteractive: boolean }
+type Unsubscribe = () => void
 
-export interface HotkeyPayload {
-  interactKey: string
-  visibilityKey: string
-}
-
-export interface ElectronAPI {
+interface ElectronAPI {
   overlay: {
-    // Legacy
     toggleInteractive(interactive: boolean): Promise<void>
     toggleVisibility(): Promise<void>
     hide(): Promise<void>
-    setOpacity(opacity: number): Promise<void>
-
-    // ControlPanel button actions
     show(): Promise<void>
     hideMgr(): Promise<void>
-    toggleVisibilityNow(): Promise<void>
-    toggleInteractiveNow(): Promise<void>
-
-    // Hotkey management
+    setOpacity(opacity: number): Promise<void>
+    toggleVisibilityNow(): void
+    toggleInteractiveNow(): void
+    setCompactMode(compact: boolean): Promise<void>
     getHotkeys(): Promise<HotkeyPayload>
-    setInteractKey(key: string): Promise<HotkeyResult>
-    setVisibilityKey(key: string): Promise<HotkeyResult>
-    getState(): Promise<OverlayStatePayload & HotkeyPayload>
-
-    // Events
-    onInteractiveState(callback: (interactive: boolean) => void): () => void
-    onStateChanged(callback: (state: OverlayStatePayload) => void): () => void
-    onHotkeysChanged(callback: (hotkeys: HotkeyPayload) => void): () => void
+    setInteractKey(key: string): Promise<{ success: boolean; error?: string }>
+    setVisibilityKey(key: string): Promise<{ success: boolean; error?: string }>
+    getState(): Promise<OverlayStatePayload>
+    getWindowBounds(): Promise<{ x: number; y: number; width: number; height: number } | null>
+    saveWindowBounds(bounds: { x: number; y: number; width: number; height: number }): Promise<void>
+    onInteractiveState(callback: (interactive: boolean) => void): Unsubscribe
+    onStateChanged(callback: (state: OverlayStatePayload) => void): Unsubscribe
+    onHotkeysChanged(callback: (hotkeys: HotkeyPayload) => void): Unsubscribe
   }
 
   clipboard: {
     writeText(text: string): Promise<boolean>
   }
 
-  metaTFT?: {
-    scrapeLiveComps(): Promise<any>
+  metaTFT: {
+    scrapeLiveComps(): Promise<string>
     apiFetch(url: string): Promise<string>
   }
 
+  riotApi: {
+    getKey(): Promise<string>
+    setKey(key: string): Promise<void>
+    getRegion(): Promise<string>
+    setRegion(region: string): Promise<void>
+  }
+
   lcu: {
-    getStatus(): Promise<{ connected: boolean; phase: string; port: number | null }>
-    onConnected(callback: (info: any) => void): () => void
-    onDisconnected(callback: () => void): () => void
-    onGameflowPhase(callback: (phase: string) => void): () => void
-    onGameflowSession(callback: (session: any) => void): () => void
-    onEndOfGameStats(callback: (stats: any) => void): () => void
-    onSummonerInfo(callback: (info: any) => void): () => void
+    getStatus(): Promise<{ connected: boolean; phase?: string }>
+    onConnected(callback: (info: any) => void): Unsubscribe
+    onDisconnected(callback: () => void): Unsubscribe
+    onGameflowPhase(callback: (phase: string) => void): Unsubscribe
+    onGameflowSession(callback: (session: any) => void): Unsubscribe
+    onEndOfGameStats(callback: (stats: any) => void): Unsubscribe
+    onSummonerInfo(callback: (info: any) => void): Unsubscribe
+    onLobbyParticipants(callback: (participants: string[]) => void): Unsubscribe
   }
 
   livegame: {
-    getStatus(): Promise<{ gameMode: string; gameTime: number; mapName: string; mapNumber: number } | null>
-    onAttached(callback: (stats: any) => void): () => void
-    onDetached(callback: () => void): () => void
-    onStatsUpdate(callback: (stats: any) => void): () => void
-    onTFTRoundChange(callback: (tftState: any) => void): () => void
+    getStatus(): Promise<any>
+    onAttached(callback: (stats: any) => void): Unsubscribe
+    onDetached(callback: () => void): Unsubscribe
+    onStatsUpdate(callback: (stats: any) => void): Unsubscribe
+    onTFTRoundChange(callback: (tftState: any) => void): Unsubscribe
+    onTFTState(callback: (state: any) => void): Unsubscribe
+  }
+
+  notif: {
+    onNotification(callback: (payload: any) => void): Unsubscribe
+    push(payload: any): void
+    notifyEmpty(): void
+    notifyActive(): void
+    test(): void
+    getBounds(): Promise<any>
+    saveBounds(b: any): Promise<any>
+  }
+
+  logs: {
+    openLogFile(): Promise<void>
   }
 }
 
 declare global {
   interface Window {
-    electronAPI: ElectronAPI
+    electronAPI?: ElectronAPI
   }
 }
+
+export {}

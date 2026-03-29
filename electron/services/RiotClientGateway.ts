@@ -73,6 +73,10 @@ export class RiotClientGateway extends EventEmitter {
     }
   }
 
+  public getCredentials(): LCUCredentials | null {
+    return this.credentials
+  }
+
   private connectWebSocket(creds: LCUCredentials) {
     this.cleanupWebSocket()
 
